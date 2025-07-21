@@ -1,9 +1,9 @@
-import express from "express";
 import http from "http";
-import { Server } from "socket.io";
 import dotenv from "dotenv";
+import express from "express";
+import { Server } from "socket.io";
+import { Chat } from "./src/types";
 import { createClient } from "@supabase/supabase-js";
-import { Chat } from "./src/types"; // 메시지 타입 정의
 
 dotenv.config();
 
@@ -18,7 +18,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // 프론트엔드 주소
+    origin: "https://citychat-beta.vercel.app", // 프론트엔드 주소
     methods: ["GET", "POST"],
   },
 });
@@ -30,7 +30,7 @@ io.on("connection", (socket) => {
   console.log(`✅ User connected to room ${roomId}`);
 
   socket.on("sendMessage", async (msg: Chat) => {
-    const { content, tags, sender, senderId, replyToId } = msg;
+    const { content, tags, sender, senderId, replyToId, sentAt } = msg;
     // 서버에서 데이터베이스로 정보 저장 시작
     // 1. chats 테이블에 저장
     const { data: chatData, error: chatError } = await supabase
@@ -41,8 +41,9 @@ io.on("connection", (socket) => {
         user_id: senderId,
         chat_room_id: parseInt(roomId),
         parent_chat_id: replyToId ?? null,
+        sent_at: sentAt,
       })
-      .select(); // ← id 포함된 새 row 반환
+      .select();
 
     if (chatError || !chatData) {
       console.error("❌ Chat 저장 실패:", chatError);
