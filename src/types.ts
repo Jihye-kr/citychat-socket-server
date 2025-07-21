@@ -4,5 +4,6 @@ export interface Chat {
   tags?: string[];
   sender: string;
   senderId: number;
-  replyToId?: number | null; // parent chat ID
+  replyToId?: number | null;
+  sentAt: string;
 }
